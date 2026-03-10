@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/redis/go-redis/v9"
@@ -24,11 +26,19 @@ func NewRedisClient() *redis.Client {
 
 	db := 0
 
-	return redis.NewClient(&redis.Options{
-		Addr:     host + ":" + port,
+	addr := host + ":" + port
+	slog.Info("connecting to redis", "addr", addr)
+
+	opts := &redis.Options{
+		Addr:     addr,
 		Password: password,
 		DB:       db,
-	})
+	}
+	if os.Getenv("REDIS_TLS") == "true" {
+		opts.TLSConfig = &tls.Config{}
+	}
+
+	return redis.NewClient(opts)
 }
 
 func IncrClick(ctx context.Context, rdb *redis.Client, slug string) error {
