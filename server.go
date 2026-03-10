@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -24,6 +23,11 @@ type Server struct {
 
 func NewServer(routes map[string]string, rdb *redis.Client) *Server {
 	return &Server{routes: routes, rdb: rdb}
+}
+
+func notFound(w http.ResponseWriter, r *http.Request, slug string) {
+	slog.Warn("not found", "slug", slug, "method", r.Method, "remote", r.RemoteAddr)
+	http.NotFound(w, r)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +52,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if slug == "llms.txt" {
-		s.handleLLMsTxt(w, r)
+		s.handleLLMsTxt(w)
 		return
 	}
 
@@ -59,8 +63,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	target, ok := s.routes[slug]
 	if !ok {
-		slog.Warn("not found", "slug", slug, "method", r.Method, "remote", r.RemoteAddr)
-		http.NotFound(w, r)
+		notFound(w, r, slug)
 		return
 	}
 
@@ -79,8 +82,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug string) {
 	if _, ok := s.routes[slug]; !ok {
-		slog.Warn("not found", "slug", slug, "method", r.Method, "remote", r.RemoteAddr)
-		http.NotFound(w, r)
+		notFound(w, r, slug)
 		return
 	}
 
@@ -101,7 +103,7 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug strin
 	w.Write(png)
 }
 
-func (s *Server) handleLLMsTxt(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleLLMsTxt(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write([]byte(llmsTmpl))
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"log/slog"
 	"net/http"
@@ -10,10 +11,7 @@ import (
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 
-	configPath := os.Getenv("REDIR_CONFIG")
-	if configPath == "" {
-		configPath = "redirects.toml"
-	}
+	configPath := cmp.Or(os.Getenv("REDIR_CONFIG"), "redirects.toml")
 
 	routes, err := LoadConfig(configPath)
 	if err != nil {
@@ -28,10 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	addr := os.Getenv("REDIR_ADDR")
-	if addr == "" {
-		addr = ":4000"
-	}
+	addr := cmp.Or(os.Getenv("REDIR_ADDR"), ":4000")
 
 	srv := NewServer(routes, rdb)
 	slog.Info("server starting", "addr", addr)
