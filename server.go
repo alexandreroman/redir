@@ -59,6 +59,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	target, ok := s.routes[slug]
 	if !ok {
+		slog.Warn("not found", "slug", slug, "method", r.Method, "remote", r.RemoteAddr)
 		http.NotFound(w, r)
 		return
 	}
@@ -78,6 +79,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug string) {
 	if _, ok := s.routes[slug]; !ok {
+		slog.Warn("not found", "slug", slug, "method", r.Method, "remote", r.RemoteAddr)
 		http.NotFound(w, r)
 		return
 	}
