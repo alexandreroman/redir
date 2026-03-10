@@ -8,4 +8,5 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /redir .
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /redir /redir
 EXPOSE 4000
+USER 1000:1000
 ENTRYPOINT ["/redir"]
