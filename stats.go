@@ -2,59 +2,44 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
-	"log/slog"
-	"os"
+	"strconv"
 
 	"github.com/redis/go-redis/v9"
 )
 
 const redisKeyPrefix = "redir:clicks:"
 
-func NewRedisClient() *redis.Client {
-	host := os.Getenv("REDIS_HOST")
-	if host == "" {
-		host = "localhost"
-	}
-	port := os.Getenv("REDIS_PORT")
-	if port == "" {
-		port = "6379"
-	}
-
-	password := os.Getenv("REDIS_PASSWORD")
-
-	db := 0
-
-	addr := host + ":" + port
-	slog.Info("connecting to redis", "addr", addr)
-
-	opts := &redis.Options{
-		Addr:     addr,
-		Password: password,
-		DB:       db,
-	}
-	if os.Getenv("REDIS_TLS") == "true" {
-		opts.TLSConfig = &tls.Config{}
-	}
-
-	return redis.NewClient(opts)
-}
-
 func IncrClick(ctx context.Context, rdb *redis.Client, slug string) error {
 	return rdb.Incr(ctx, redisKeyPrefix+slug).Err()
 }
 
 func GetAllClicks(ctx context.Context, rdb *redis.Client, slugs []string) (map[string]int64, error) {
+	keys := make([]string, len(slugs))
+	for i, slug := range slugs {
+		keys[i] = redisKeyPrefix + slug
+	}
+
+	vals, err := rdb.MGet(ctx, keys...).Result()
+	if err != nil {
+		return nil, fmt.Errorf("redis mget: %w", err)
+	}
+
 	stats := make(map[string]int64, len(slugs))
-	for _, slug := range slugs {
-		count, err := rdb.Get(ctx, redisKeyPrefix+slug).Int64()
-		if err == redis.Nil {
-			count = 0 // No key yet means no clicks recorded.
-		} else if err != nil {
-			return nil, fmt.Errorf("redis get %s: %w", slug, err)
+	for i, slug := range slugs {
+		if vals[i] == nil {
+			stats[slug] = 0
+			continue
 		}
-		stats[slug] = count
+		s, ok := vals[i].(string)
+		if !ok {
+			return nil, fmt.Errorf("redis mget: unexpected type for %s", slug)
+		}
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("redis mget: invalid value for %s: %w", slug, err)
+		}
+		stats[slug] = n
 	}
 	return stats, nil
 }

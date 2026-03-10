@@ -9,6 +9,13 @@ import (
 
 var validSlug = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 
+var reservedSlugs = map[string]bool{
+	"healthz":    true,
+	"stats":      true,
+	"robots.txt": true,
+	"llms.txt":   true,
+}
+
 type Redirect struct {
 	Slug string `toml:"slug"`
 	URL  string `toml:"url"`
@@ -29,6 +36,9 @@ func LoadConfig(path string) (map[string]string, error) {
 	for _, r := range cfg.Redirects {
 		if !validSlug.MatchString(r.Slug) {
 			return nil, fmt.Errorf("invalid slug %q: must contain only letters, digits, hyphens or underscores", r.Slug)
+		}
+		if reservedSlugs[r.Slug] {
+			return nil, fmt.Errorf("slug %q is reserved and cannot be used as a redirect", r.Slug)
 		}
 		routes[r.Slug] = r.URL
 	}
