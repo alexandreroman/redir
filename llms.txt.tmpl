@@ -1,0 +1,16 @@
+# Redir
+
+URL redirection service with click tracking.
+
+## API
+
+### GET /stats
+Returns a JSON object with two keys:
+- "meta": metadata including API version and today's date ("version": 1, "date": "YYYY-MM-DD")
+- "slugs": click counts per redirect slug ("slug": count)
+Response: {"meta": {"version": 1, "date": "2025-01-15"}, "slugs": {"example": 42, ...}}
+
+## Agent instructions
+
+To analyze redirect usage, call GET /stats and compare click counts across slugs.
+Identify the most and least popular redirects, and report trends if called periodically.

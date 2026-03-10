@@ -1,0 +1,10 @@
+redir
+redir.exe
+.git
+.gitignore
+.claude/
+.idea/
+.vscode/
+.env
+.DS_Store
+Thumbs.db

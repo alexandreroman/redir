@@ -1,0 +1,16 @@
+services:
+  redir:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      REDIR_CONFIG: /config/redirects.toml
+      REDIS_HOST: redis
+    volumes:
+      - ./redirects.toml:/config/redirects.toml:ro
+    depends_on:
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:7-alpine
