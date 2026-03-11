@@ -29,9 +29,13 @@ func main() {
 		slog.Warn("redis is not available, stats tracking will be disabled until reconnection", "error", err)
 	}
 
+	slog.Info("fetching Open Graph tags from target URLs")
+	og := FetchAllOGTags(routes)
+	slog.Info("Open Graph tags fetched", "count", len(og))
+
 	addr := cmp.Or(os.Getenv("REDIR_ADDR"), ":4000")
 
-	srv := NewServer(routes, rdb)
+	srv := NewServer(routes, rdb, og)
 	slog.Info("server starting", "addr", addr)
 	if err := http.ListenAndServe(addr, srv); err != nil {
 		slog.Error("server stopped", "error", err)

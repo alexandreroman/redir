@@ -19,7 +19,7 @@ func newTestServer(t *testing.T) (*Server, *miniredis.Miniredis) {
 		"gh":   "https://github.com",
 		"docs": "https://docs.example.com",
 	}
-	return NewServer(routes, rdb), mr
+	return NewServer(routes, rdb, nil), mr
 }
 
 func TestHealthz(t *testing.T) {

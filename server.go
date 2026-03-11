@@ -22,10 +22,11 @@ var indexHTML []byte
 type Server struct {
 	routes map[string]string
 	rdb    *redis.Client
+	og     map[string]OGTags
 }
 
-func NewServer(routes map[string]string, rdb *redis.Client) *Server {
-	return &Server{routes: routes, rdb: rdb}
+func NewServer(routes map[string]string, rdb *redis.Client, og map[string]OGTags) *Server {
+	return &Server{routes: routes, rdb: rdb, og: og}
 }
 
 func notFound(w http.ResponseWriter, r *http.Request, slug string) {
@@ -85,6 +86,16 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	slog.Info("redirect", "slug", slug, "target", target)
+
+	// Serve an HTML page with Open Graph meta tags to social media crawlers
+	// so that link previews render correctly on LinkedIn, Facebook, etc.
+	if og, ok := s.og[slug]; ok && isSocialBot(r.UserAgent()) {
+		page := renderOGRedirectPage(target, og)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write([]byte(page))
+		return
+	}
+
 	http.Redirect(w, r, target, http.StatusFound)
 }
 
