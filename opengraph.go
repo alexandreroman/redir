@@ -15,15 +15,15 @@ import (
 // OGTags holds the Open Graph metadata extracted from a target URL.
 type OGTags struct {
 	Title         string
+	Type          string
 	Description   string
 	Image         string
-	Author        string
-	PublishedTime string
+	Author string
 }
 
-// Empty reports whether all OG fields are blank.
+// Empty reports whether the required OG field (title) is blank.
 func (og OGTags) Empty() bool {
-	return og.Title == "" && og.Description == "" && og.Image == "" && og.Author == "" && og.PublishedTime == ""
+	return og.Title == ""
 }
 
 // FetchOGTags fetches the given URL and extracts Open Graph meta tags.
@@ -73,14 +73,14 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 			switch property {
 			case "og:title":
 				og.Title = content
+			case "og:type":
+				og.Type = content
 			case "og:description":
 				og.Description = content
 			case "og:image":
 				og.Image = content
 			case "article:author":
 				og.Author = content
-			case "article:published_time":
-				og.PublishedTime = content
 			}
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -121,23 +121,32 @@ func isSocialBot(ua string) bool {
 func renderOGPage(og OGTags) string {
 	var b strings.Builder
 	b.WriteString("<!DOCTYPE html>\n<html>\n<head>\n")
+	b.WriteString("<meta charset=\"utf-8\" />\n")
 
 	if og.Title != "" {
-		fmt.Fprintf(&b, "<meta property=\"og:title\" content=\"%s\" />\n", html.EscapeString(og.Title))
-	}
-	if og.Description != "" {
-		fmt.Fprintf(&b, "<meta property=\"og:description\" content=\"%s\" />\n", html.EscapeString(og.Description))
-	}
-	if og.Image != "" {
-		fmt.Fprintf(&b, "<meta property=\"og:image\" content=\"%s\" />\n", html.EscapeString(og.Image))
-	}
-	if og.Author != "" {
-		fmt.Fprintf(&b, "<meta property=\"article:author\" content=\"%s\" />\n", html.EscapeString(og.Author))
-	}
-	if og.PublishedTime != "" {
-		fmt.Fprintf(&b, "<meta property=\"article:published_time\" content=\"%s\" />\n", html.EscapeString(og.PublishedTime))
+		escaped := html.EscapeString(og.Title)
+		fmt.Fprintf(&b, "<meta name=\"title\" property=\"og:title\" content=\"%s\" />\n", escaped)
+		fmt.Fprintf(&b, "<title>%s</title>\n", escaped)
 	}
 
+	ogType := og.Type
+	if ogType == "" {
+		ogType = "website"
+	}
+	fmt.Fprintf(&b, "<meta property=\"og:type\" content=\"%s\" />\n", html.EscapeString(ogType))
+
+	if og.Description != "" {
+		escaped := html.EscapeString(og.Description)
+		fmt.Fprintf(&b, "<meta name=\"description\" property=\"og:description\" content=\"%s\" />\n", escaped)
+	}
+	if og.Image != "" {
+		escaped := html.EscapeString(og.Image)
+		fmt.Fprintf(&b, "<meta name=\"image\" property=\"og:image\" content=\"%s\" />\n", escaped)
+	}
+	if og.Author != "" {
+		escaped := html.EscapeString(og.Author)
+		fmt.Fprintf(&b, "<meta name=\"author\" property=\"article:author\" content=\"%s\" />\n", escaped)
+	}
 	b.WriteString("</head>\n<body></body>\n</html>\n")
 
 	return b.String()
