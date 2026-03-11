@@ -85,7 +85,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	slog.Info("redirect", "slug", slug, "target", target)
+	if ua := r.UserAgent(); ua != "" {
+		slog.Info("redirect", "slug", slug, "target", target, "user_agent", ua)
+	} else {
+		slog.Info("redirect", "slug", slug, "target", target)
+	}
 
 	// Serve an HTML page with Open Graph meta tags to social media crawlers
 	// so that link previews render correctly on LinkedIn, Facebook, etc.
