@@ -111,8 +111,14 @@ func TestRedirect_RootPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
 
-	if w.Code != http.StatusNotFound {
-		t.Errorf("expected 404 for root path, got %d", w.Code)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 for root path, got %d", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); ct != "text/html; charset=utf-8" {
+		t.Errorf("expected text/html; charset=utf-8, got %q", ct)
+	}
+	if w.Body.Len() == 0 {
+		t.Error("expected non-empty body for index page")
 	}
 }
 

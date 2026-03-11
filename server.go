@@ -16,6 +16,9 @@ import (
 //go:embed llms.txt.tmpl
 var llmsTmpl string
 
+//go:embed index.html
+var indexHTML []byte
+
 type Server struct {
 	routes map[string]string
 	rdb    *redis.Client
@@ -32,6 +35,12 @@ func notFound(w http.ResponseWriter, r *http.Request, slug string) {
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	slug := strings.TrimPrefix(r.URL.Path, "/")
+
+	if slug == "" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(indexHTML)
+		return
+	}
 
 	if slug == "healthz" {
 		w.Header().Set("Content-Type", "text/plain")
