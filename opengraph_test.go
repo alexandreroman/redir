@@ -18,7 +18,6 @@ func TestParseOGTags(t *testing.T) {
 <meta property="og:description" content="Example Description" />
 <meta property="og:image" content="https://example.com/image.png" />
 <meta property="article:author" content="Jane Doe" />
-<meta property="article:published_time" content="2025-06-15T10:00:00Z" />
 </head>
 <body></body>
 </html>`
@@ -38,9 +37,6 @@ func TestParseOGTags(t *testing.T) {
 	}
 	if og.Author != "Jane Doe" {
 		t.Errorf("expected author %q, got %q", "Jane Doe", og.Author)
-	}
-	if og.PublishedTime != "2025-06-15T10:00:00Z" {
-		t.Errorf("expected published_time %q, got %q", "2025-06-15T10:00:00Z", og.PublishedTime)
 	}
 }
 
@@ -174,11 +170,10 @@ func TestRedirect_NoOGTagsFallsBackTo302(t *testing.T) {
 
 func TestRenderOGPage(t *testing.T) {
 	og := OGTags{
-		Title:         "Test <Title>",
-		Description:   "A \"description\"",
-		Image:         "https://example.com/img.png",
-		Author:        "Jane <Doe>",
-		PublishedTime: "2025-06-15T10:00:00Z",
+		Title:       "Test <Title>",
+		Description: "A \"description\"",
+		Image:       "https://example.com/img.png",
+		Author:      "Jane <Doe>",
 	}
 	page := renderOGPage(og)
 
@@ -190,9 +185,6 @@ func TestRenderOGPage(t *testing.T) {
 	}
 	if !strings.Contains(page, "Jane &lt;Doe&gt;") {
 		t.Error("expected HTML-escaped author")
-	}
-	if !strings.Contains(page, `article:published_time`) {
-		t.Error("expected article:published_time in rendered page")
 	}
 	if strings.Contains(page, `meta http-equiv="refresh"`) {
 		t.Error("OG page must not contain a meta refresh redirect")
@@ -207,7 +199,6 @@ func TestFetchOGTags_FromTestServer(t *testing.T) {
 			<meta property="og:description" content="A test" />
 			<meta property="og:image" content="https://test.com/img.png" />
 			<meta property="article:author" content="John Smith" />
-			<meta property="article:published_time" content="2025-01-01T12:00:00Z" />
 		</head><body></body></html>`))
 	}))
 	defer ts.Close()
@@ -227,8 +218,5 @@ func TestFetchOGTags_FromTestServer(t *testing.T) {
 	}
 	if og.Author != "John Smith" {
 		t.Errorf("expected author %q, got %q", "John Smith", og.Author)
-	}
-	if og.PublishedTime != "2025-01-01T12:00:00Z" {
-		t.Errorf("expected published_time %q, got %q", "2025-01-01T12:00:00Z", og.PublishedTime)
 	}
 }

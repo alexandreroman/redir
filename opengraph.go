@@ -18,8 +18,7 @@ type OGTags struct {
 	Type          string
 	Description   string
 	Image         string
-	Author        string
-	PublishedTime string
+	Author string
 }
 
 // Empty reports whether the required OG field (title) is blank.
@@ -82,8 +81,6 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 				og.Image = content
 			case "article:author":
 				og.Author = content
-			case "article:published_time":
-				og.PublishedTime = content
 			}
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -150,10 +147,6 @@ func renderOGPage(og OGTags) string {
 		escaped := html.EscapeString(og.Author)
 		fmt.Fprintf(&b, "<meta name=\"author\" property=\"article:author\" content=\"%s\" />\n", escaped)
 	}
-	if og.PublishedTime != "" {
-		fmt.Fprintf(&b, "<meta property=\"article:published_time\" content=\"%s\" />\n", html.EscapeString(og.PublishedTime))
-	}
-
 	b.WriteString("</head>\n<body></body>\n</html>\n")
 
 	return b.String()
