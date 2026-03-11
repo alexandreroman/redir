@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html"
 	"io"
-	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -91,40 +90,6 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 	walk(doc)
 
 	return og, nil
-}
-
-// FetchAllOGTags fetches Open Graph tags for every route in parallel.
-// Errors are logged but do not prevent other routes from being fetched.
-func FetchAllOGTags(routes map[string]string) map[string]OGTags {
-	type result struct {
-		slug string
-		tags OGTags
-	}
-
-	ch := make(chan result, len(routes))
-	for slug, url := range routes {
-		go func(s, u string) {
-			tags, err := FetchOGTags(u)
-			if err != nil {
-				slog.Warn("failed to fetch OG tags", "slug", s, "url", u, "error", err)
-				ch <- result{slug: s}
-				return
-			}
-			if tags.Empty() {
-				slog.Debug("no OG tags found", "slug", s, "url", u)
-			}
-			ch <- result{slug: s, tags: tags}
-		}(slug, url)
-	}
-
-	ogMap := make(map[string]OGTags, len(routes))
-	for range len(routes) {
-		r := <-ch
-		if !r.tags.Empty() {
-			ogMap[r.slug] = r.tags
-		}
-	}
-	return ogMap
 }
 
 // isSocialBot returns true if the User-Agent belongs to a social media crawler.

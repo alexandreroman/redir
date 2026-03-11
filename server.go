@@ -22,11 +22,10 @@ var indexHTML []byte
 type Server struct {
 	routes map[string]string
 	rdb    *redis.Client
-	og     map[string]OGTags
 }
 
-func NewServer(routes map[string]string, rdb *redis.Client, og map[string]OGTags) *Server {
-	return &Server{routes: routes, rdb: rdb, og: og}
+func NewServer(routes map[string]string, rdb *redis.Client) *Server {
+	return &Server{routes: routes, rdb: rdb}
 }
 
 func notFound(w http.ResponseWriter, r *http.Request, slug string) {
@@ -79,12 +78,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Serve an HTML page with Open Graph meta tags to social media crawlers
 	// so that link previews render correctly on LinkedIn, Facebook, etc.
 	// Social bots do not trigger a redirect or increment the click counter.
-	if og, ok := s.og[slug]; ok && isSocialBot(r.UserAgent()) {
-		slog.Info("social bot", "slug", slug, "target", target, "user_agent", r.UserAgent())
-		page := renderOGPage(og)
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write([]byte(page))
-		return
+	// OG tags are fetched on-demand when a social bot requests the page.
+	if isSocialBot(r.UserAgent()) {
+		og, err := FetchOGTags(target)
+		if err != nil {
+			slog.Warn("failed to fetch OG tags", "slug", slug, "url", target, "error", err)
+		} else if !og.Empty() {
+			slog.Info("social bot", "slug", slug, "target", target, "user_agent", r.UserAgent())
+			page := renderOGPage(og)
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.Write([]byte(page))
+			return
+		}
 	}
 
 	// Fire-and-forget: track the click without delaying the redirect response.
