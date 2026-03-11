@@ -14,11 +14,11 @@ import (
 
 // OGTags holds the Open Graph metadata extracted from a target URL.
 type OGTags struct {
-	Title         string
-	Type          string
-	Description   string
-	Image         string
-	Author string
+	Title       string
+	Type        string
+	Description string
+	Image       string
+	Author      string
 }
 
 // Empty reports whether the required OG field (title) is blank.
