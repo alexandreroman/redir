@@ -8,6 +8,10 @@
 - Use `make lint` to run the linter.
 - Use `docker compose up --build` to compile and run the app with its dependencies.
 
+## Code Formatting
+
+- Run `go fmt ./...` before staging Go files with `git add` to ensure consistent formatting.
+
 ## Reserved Slugs
 
 When adding a new endpoint (e.g. `robots.txt`, `healthz`, `stats`), remember to:

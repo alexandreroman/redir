@@ -9,6 +9,7 @@ A lightweight URL redirection service written in Go, with click tracking powered
 - **URL Redirection** — define short slugs that redirect to full URLs via a simple TOML config file.
 - **Click Tracking** — every redirect increments a counter in Redis, queryable via the `/stats` endpoint.
 - **QR Code Generation** — append `.png` to any slug (e.g. `/github.png`) to get a QR code image pointing to that redirect.
+- **Social Media Previews** — automatically fetches Open Graph meta tags from target URLs and serves them to social media crawlers (LinkedIn, Facebook, Twitter, Slack, Discord, etc.) for rich link previews.
 - **Health Check** — `/healthz` endpoint for load balancers and orchestrators.
 
 ## Getting Started
@@ -42,6 +43,7 @@ url = "https://linkedin.com/in/alexandre-roman"
 | `REDIS_HOST` | `localhost` | Redis host |
 | `REDIS_PORT` | `6379` | Redis port |
 | `REDIS_PASSWORD` | *(empty)* | Redis password |
+| `REDIS_TLS` | *(empty)* | Set to `true` to enable TLS for Redis connections |
 
 ### Run Locally
 
@@ -62,11 +64,12 @@ This starts both the `redir` server and a Redis instance. The service is availab
 
 | Endpoint | Description |
 |---|---|
+| `GET /` | Index page |
 | `GET /<slug>` | Redirects to the configured URL (HTTP 302) |
 | `GET /<slug>.png` | Returns a QR code image for the redirect |
 | `GET /stats` | Returns click counts per slug as JSON |
 | `GET /healthz` | Health check (`OK`) |
-| `GET /robots.txt` | Disallows all crawlers |
+| `GET /robots.txt` | Allows all crawlers |
 
 ### Example: `/stats` Response
 
