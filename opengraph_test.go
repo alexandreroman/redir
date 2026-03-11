@@ -17,7 +17,7 @@ func TestParseOGTags(t *testing.T) {
 <meta property="og:title" content="Example Title" />
 <meta property="og:description" content="Example Description" />
 <meta property="og:image" content="https://example.com/image.png" />
-<meta property="article:author" content="Jane Doe" />
+<meta name="author" content="Jane Doe" />
 </head>
 <body></body>
 </html>`
@@ -198,7 +198,7 @@ func TestFetchOGTags_FromTestServer(t *testing.T) {
 			<meta property="og:title" content="Test Page" />
 			<meta property="og:description" content="A test" />
 			<meta property="og:image" content="https://test.com/img.png" />
-			<meta property="article:author" content="John Smith" />
+			<meta name="author" content="John Smith" />
 		</head><body></body></html>`))
 	}))
 	defer ts.Close()
