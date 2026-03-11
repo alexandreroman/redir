@@ -15,14 +15,16 @@ import (
 
 // OGTags holds the Open Graph metadata extracted from a target URL.
 type OGTags struct {
-	Title       string
-	Description string
-	Image       string
+	Title         string
+	Description   string
+	Image         string
+	Author        string
+	PublishedTime string
 }
 
 // Empty reports whether all OG fields are blank.
 func (og OGTags) Empty() bool {
-	return og.Title == "" && og.Description == "" && og.Image == ""
+	return og.Title == "" && og.Description == "" && og.Image == "" && og.Author == "" && og.PublishedTime == ""
 }
 
 // FetchOGTags fetches the given URL and extracts Open Graph meta tags.
@@ -76,6 +78,10 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 				og.Description = content
 			case "og:image":
 				og.Image = content
+			case "article:author":
+				og.Author = content
+			case "article:published_time":
+				og.PublishedTime = content
 			}
 		}
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -159,6 +165,12 @@ func renderOGPage(og OGTags) string {
 	}
 	if og.Image != "" {
 		fmt.Fprintf(&b, "<meta property=\"og:image\" content=\"%s\" />\n", html.EscapeString(og.Image))
+	}
+	if og.Author != "" {
+		fmt.Fprintf(&b, "<meta property=\"article:author\" content=\"%s\" />\n", html.EscapeString(og.Author))
+	}
+	if og.PublishedTime != "" {
+		fmt.Fprintf(&b, "<meta property=\"article:published_time\" content=\"%s\" />\n", html.EscapeString(og.PublishedTime))
 	}
 
 	b.WriteString("</head>\n<body></body>\n</html>\n")
