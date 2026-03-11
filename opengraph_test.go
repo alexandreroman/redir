@@ -104,11 +104,13 @@ func TestRedirect_SocialBotGetsOGPage(t *testing.T) {
 	if !strings.Contains(body, `og:image`) {
 		t.Error("expected og:image in response body")
 	}
-	if !strings.Contains(body, `meta http-equiv="refresh"`) {
-		t.Error("expected meta refresh in response body")
+	if strings.Contains(body, `meta http-equiv="refresh"`) {
+		t.Error("social bot page must not contain a meta refresh redirect")
 	}
-	if !strings.Contains(body, `https://github.com`) {
-		t.Error("expected target URL in response body")
+
+	// Social bots must not increment the click counter.
+	if clicks, err := mr.Get("redir:clicks:gh"); err == nil {
+		t.Errorf("expected no clicks for social bot, got %s", clicks)
 	}
 }
 
@@ -154,13 +156,13 @@ func TestRedirect_NoOGTagsFallsBackTo302(t *testing.T) {
 	}
 }
 
-func TestRenderOGRedirectPage(t *testing.T) {
+func TestRenderOGPage(t *testing.T) {
 	og := OGTags{
 		Title:       "Test <Title>",
 		Description: "A \"description\"",
 		Image:       "https://example.com/img.png",
 	}
-	page := renderOGRedirectPage("https://example.com", og)
+	page := renderOGPage(og)
 
 	if !strings.Contains(page, "Test &lt;Title&gt;") {
 		t.Error("expected HTML-escaped title")
@@ -168,8 +170,8 @@ func TestRenderOGRedirectPage(t *testing.T) {
 	if !strings.Contains(page, "A &#34;description&#34;") {
 		t.Error("expected HTML-escaped description")
 	}
-	if !strings.Contains(page, `content="0; url=https://example.com"`) {
-		t.Error("expected meta refresh with target URL")
+	if strings.Contains(page, `meta http-equiv="refresh"`) {
+		t.Error("OG page must not contain a meta refresh redirect")
 	}
 }
 
