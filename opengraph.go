@@ -95,6 +95,19 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 	return og, nil
 }
 
+// isValidOGType reports whether the given type is a recognized Open Graph type.
+// See https://ogp.me/#types
+func isValidOGType(t string) bool {
+	switch t {
+	case "website", "article",
+		"book", "profile",
+		"music.song", "music.album", "music.playlist", "music.radio_station",
+		"video.movie", "video.episode", "video.tv_show", "video.other":
+		return true
+	}
+	return false
+}
+
 // isSocialBot returns true if the User-Agent belongs to a social media crawler.
 func isSocialBot(ua string) bool {
 	ua = strings.ToLower(ua)
@@ -133,7 +146,7 @@ func renderOGPage(og OGTags) string {
 	}
 
 	ogType := og.Type
-	if ogType == "" {
+	if !isValidOGType(ogType) {
 		ogType = "website"
 	}
 	fmt.Fprintf(&b, "<meta property=\"og:type\" content=\"%s\" />\n", html.EscapeString(ogType))
