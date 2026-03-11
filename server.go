@@ -85,7 +85,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			slog.Warn("failed to fetch OG tags", "slug", slug, "url", target, "error", err)
 		} else if !og.Empty() {
 			slog.Info("social bot", "slug", slug, "target", target, "user_agent", r.UserAgent())
-			page := renderOGPage(og)
+			page := renderOGPage(og, target)
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.Write([]byte(page))
 			return

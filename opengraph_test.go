@@ -175,7 +175,7 @@ func TestRenderOGPage(t *testing.T) {
 		Image:       "https://example.com/img.png",
 		Author:      "Jane <Doe>",
 	}
-	page := renderOGPage(og)
+	page := renderOGPage(og, "https://example.com/target")
 
 	if !strings.Contains(page, "Test &lt;Title&gt;") {
 		t.Error("expected HTML-escaped title")
@@ -188,6 +188,19 @@ func TestRenderOGPage(t *testing.T) {
 	}
 	if strings.Contains(page, `meta http-equiv="refresh"`) {
 		t.Error("OG page must not contain a meta refresh redirect")
+	}
+	if !strings.Contains(page, `property="og:url" content="https://example.com/target"`) {
+		t.Error("expected og:url meta tag with target URL")
+	}
+	// og:title, og:description, og:image should not have a name attribute
+	if strings.Contains(page, `name="title"`) {
+		t.Error("og:title should not have a name attribute")
+	}
+	if strings.Contains(page, `name="description"`) {
+		t.Error("og:description should not have a name attribute")
+	}
+	if strings.Contains(page, `name="image"`) {
+		t.Error("og:image should not have a name attribute")
 	}
 }
 

@@ -134,14 +134,14 @@ func isSocialBot(ua string) bool {
 
 // renderOGPage returns an HTML page that contains only Open Graph meta tags.
 // No redirect is performed — this page is meant for social media crawlers only.
-func renderOGPage(og OGTags) string {
+func renderOGPage(og OGTags, targetURL string) string {
 	var b strings.Builder
 	b.WriteString("<!DOCTYPE html>\n<html>\n<head>\n")
 	b.WriteString("<meta charset=\"utf-8\" />\n")
 
 	if og.Title != "" {
 		escaped := html.EscapeString(og.Title)
-		fmt.Fprintf(&b, "<meta name=\"title\" property=\"og:title\" content=\"%s\" />\n", escaped)
+		fmt.Fprintf(&b, "<meta property=\"og:title\" content=\"%s\" />\n", escaped)
 		fmt.Fprintf(&b, "<title>%s</title>\n", escaped)
 	}
 
@@ -151,13 +151,17 @@ func renderOGPage(og OGTags) string {
 	}
 	fmt.Fprintf(&b, "<meta property=\"og:type\" content=\"%s\" />\n", html.EscapeString(ogType))
 
+	if targetURL != "" {
+		fmt.Fprintf(&b, "<meta property=\"og:url\" content=\"%s\" />\n", html.EscapeString(targetURL))
+	}
+
 	if og.Description != "" {
 		escaped := html.EscapeString(og.Description)
-		fmt.Fprintf(&b, "<meta name=\"description\" property=\"og:description\" content=\"%s\" />\n", escaped)
+		fmt.Fprintf(&b, "<meta property=\"og:description\" content=\"%s\" />\n", escaped)
 	}
 	if og.Image != "" {
 		escaped := html.EscapeString(og.Image)
-		fmt.Fprintf(&b, "<meta name=\"image\" property=\"og:image\" content=\"%s\" />\n", escaped)
+		fmt.Fprintf(&b, "<meta property=\"og:image\" content=\"%s\" />\n", escaped)
 	}
 	if og.Author != "" {
 		escaped := html.EscapeString(og.Author)
