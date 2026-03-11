@@ -61,11 +61,13 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 	var walk func(*htmlparser.Node)
 	walk = func(n *htmlparser.Node) {
 		if n.Type == htmlparser.ElementNode && n.DataAtom == atom.Meta {
-			var property, content string
+			var property, name, content string
 			for _, a := range n.Attr {
 				switch a.Key {
 				case "property":
 					property = a.Val
+				case "name":
+					name = a.Val
 				case "content":
 					content = a.Val
 				}
@@ -79,7 +81,8 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 				og.Description = content
 			case "og:image":
 				og.Image = content
-			case "article:author":
+			}
+			if name == "author" {
 				og.Author = content
 			}
 		}
@@ -145,7 +148,7 @@ func renderOGPage(og OGTags) string {
 	}
 	if og.Author != "" {
 		escaped := html.EscapeString(og.Author)
-		fmt.Fprintf(&b, "<meta name=\"author\" property=\"article:author\" content=\"%s\" />\n", escaped)
+		fmt.Fprintf(&b, "<meta name=\"author\" content=\"%s\" />\n", escaped)
 	}
 	b.WriteString("</head>\n<body></body>\n</html>\n")
 
