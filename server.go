@@ -50,6 +50,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if slug == "robots.txt" {
+		handleRobotsTxt(w)
+		return
+	}
+
 	if qrSlug, ok := strings.CutSuffix(slug, ".png"); ok {
 		s.handleQRCode(w, r, qrSlug)
 		return
@@ -95,6 +100,11 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug strin
 
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(png)
+}
+
+func handleRobotsTxt(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte("User-agent: *\nAllow: /\n"))
 }
 
 func (s *Server) handleLLMsTxt(w http.ResponseWriter) {

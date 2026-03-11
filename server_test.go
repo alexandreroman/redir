@@ -58,6 +58,25 @@ func TestLLMsTxt(t *testing.T) {
 	}
 }
 
+func TestRobotsTxt(t *testing.T) {
+	srv, _ := newTestServer(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/robots.txt", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); ct != "text/plain; charset=utf-8" {
+		t.Errorf("expected text/plain; charset=utf-8, got %q", ct)
+	}
+	expected := "User-agent: *\nAllow: /\n"
+	if w.Body.String() != expected {
+		t.Errorf("expected %q, got %q", expected, w.Body.String())
+	}
+}
+
 func TestRedirect_ValidSlug(t *testing.T) {
 	srv, _ := newTestServer(t)
 

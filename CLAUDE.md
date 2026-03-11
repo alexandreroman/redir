@@ -7,3 +7,10 @@
 - Use `make run` to build and run the server.
 - Use `make lint` to run the linter.
 - Use `docker compose up --build` to compile and run the app with its dependencies.
+
+## Reserved Slugs
+
+When adding a new endpoint (e.g. `robots.txt`, `healthz`, `stats`), remember to:
+
+1. Add the slug to the `reservedSlugs` map in `config.go` so it cannot be used as a redirect.
+2. Update the reserved slugs list in `TestLoadConfig_ReservedSlug` in `config_test.go`.

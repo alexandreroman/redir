@@ -13,6 +13,7 @@ var reservedSlugs = map[string]bool{
 	"healthz":    true,
 	"stats":      true,
 	"llms.txt":   true,
+	"robots.txt": true,
 }
 
 type Redirect struct {
