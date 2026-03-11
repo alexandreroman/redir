@@ -79,19 +79,23 @@ func TestIsSocialBot(t *testing.T) {
 }
 
 func TestRedirect_SocialBotGetsOGPage(t *testing.T) {
+	// Serve a page with OG tags that FetchOGTags can reach.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<!DOCTYPE html><html><head>
+			<meta property="og:title" content="GitHub" />
+			<meta property="og:description" content="Where the world builds software" />
+			<meta property="og:image" content="https://github.githubassets.com/images/modules/open_graph/github-octocat.png" />
+		</head><body></body></html>`))
+	}))
+	defer ts.Close()
+
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	routes := map[string]string{
-		"gh": "https://github.com",
+		"gh": ts.URL,
 	}
-	og := map[string]OGTags{
-		"gh": {
-			Title:       "GitHub",
-			Description: "Where the world builds software",
-			Image:       "https://github.githubassets.com/images/modules/open_graph/github-octocat.png",
-		},
-	}
-	srv := NewServer(routes, rdb, og)
+	srv := NewServer(routes, rdb)
 
 	req := httptest.NewRequest(http.MethodGet, "/gh", nil)
 	req.Header.Set("User-Agent", "LinkedInBot/1.0")
@@ -128,10 +132,7 @@ func TestRedirect_RegularBrowserGets302(t *testing.T) {
 	routes := map[string]string{
 		"gh": "https://github.com",
 	}
-	og := map[string]OGTags{
-		"gh": {Title: "GitHub"},
-	}
-	srv := NewServer(routes, rdb, og)
+	srv := NewServer(routes, rdb)
 
 	req := httptest.NewRequest(http.MethodGet, "/gh", nil)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0) Chrome/91.0")
@@ -147,12 +148,19 @@ func TestRedirect_RegularBrowserGets302(t *testing.T) {
 }
 
 func TestRedirect_NoOGTagsFallsBackTo302(t *testing.T) {
+	// Target page has no OG tags — social bot should get a 302 redirect.
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<!DOCTYPE html><html><head><title>No OG</title></head><body></body></html>`))
+	}))
+	defer ts.Close()
+
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	routes := map[string]string{
-		"gh": "https://github.com",
+		"gh": ts.URL,
 	}
-	srv := NewServer(routes, rdb, nil) // no OG tags
+	srv := NewServer(routes, rdb)
 
 	req := httptest.NewRequest(http.MethodGet, "/gh", nil)
 	req.Header.Set("User-Agent", "LinkedInBot/1.0")
