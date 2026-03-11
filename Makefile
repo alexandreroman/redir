@@ -13,7 +13,7 @@ run: build
 	./$(BINARY_NAME)
 
 clean:
-	rm -f $(BINARY_NAME)
+	$(GO) clean
 
 test:
 	$(GO) test ./...
