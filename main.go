@@ -26,8 +26,7 @@ func main() {
 
 	rdb := NewRedisClient()
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
-		slog.Error("failed to connect to redis", "error", err)
-		os.Exit(1)
+		slog.Warn("redis is not available, stats tracking will be disabled until reconnection", "error", err)
 	}
 
 	addr := cmp.Or(os.Getenv("REDIR_ADDR"), ":4000")
