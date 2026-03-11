@@ -45,12 +45,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if slug == "robots.txt" {
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("User-agent: *\nDisallow: /\n"))
-		return
-	}
-
 	if slug == "llms.txt" {
 		s.handleLLMsTxt(w)
 		return

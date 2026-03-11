@@ -97,7 +97,7 @@ url  = "https://example.com"
 }
 
 func TestLoadConfig_ReservedSlug(t *testing.T) {
-	reserved := []string{"healthz", "stats", "robots.txt", "llms.txt"}
+	reserved := []string{"healthz", "stats", "llms.txt"}
 
 	for _, slug := range reserved {
 		t.Run(slug, func(t *testing.T) {

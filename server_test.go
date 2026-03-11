@@ -40,22 +40,6 @@ func TestHealthz(t *testing.T) {
 	}
 }
 
-func TestRobotsTxt(t *testing.T) {
-	srv, _ := newTestServer(t)
-
-	req := httptest.NewRequest(http.MethodGet, "/robots.txt", nil)
-	w := httptest.NewRecorder()
-	srv.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", w.Code)
-	}
-	expected := "User-agent: *\nDisallow: /\n"
-	if w.Body.String() != expected {
-		t.Errorf("unexpected body: %q", w.Body.String())
-	}
-}
-
 func TestLLMsTxt(t *testing.T) {
 	srv, _ := newTestServer(t)
 
