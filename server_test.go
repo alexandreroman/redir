@@ -40,24 +40,6 @@ func TestHealthz(t *testing.T) {
 	}
 }
 
-func TestLLMsTxt(t *testing.T) {
-	srv, _ := newTestServer(t)
-
-	req := httptest.NewRequest(http.MethodGet, "/llms.txt", nil)
-	w := httptest.NewRecorder()
-	srv.ServeHTTP(w, req)
-
-	if w.Code != http.StatusOK {
-		t.Errorf("expected 200, got %d", w.Code)
-	}
-	if ct := w.Header().Get("Content-Type"); ct != "text/plain; charset=utf-8" {
-		t.Errorf("expected text/plain; charset=utf-8, got %q", ct)
-	}
-	if w.Body.Len() == 0 {
-		t.Error("expected non-empty body for llms.txt")
-	}
-}
-
 func TestRobotsTxt(t *testing.T) {
 	srv, _ := newTestServer(t)
 

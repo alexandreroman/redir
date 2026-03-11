@@ -12,7 +12,6 @@ var validSlug = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 var reservedSlugs = map[string]bool{
 	"healthz":    true,
 	"stats":      true,
-	"llms.txt":   true,
 	"robots.txt": true,
 }
 

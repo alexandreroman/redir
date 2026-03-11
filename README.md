@@ -9,7 +9,6 @@ A lightweight URL redirection service written in Go, with click tracking powered
 - **URL Redirection** — define short slugs that redirect to full URLs via a simple TOML config file.
 - **Click Tracking** — every redirect increments a counter in Redis, queryable via the `/stats` endpoint.
 - **QR Code Generation** — append `.png` to any slug (e.g. `/github.png`) to get a QR code image pointing to that redirect.
-- **LLMs.txt** — serves a `/llms.txt` endpoint describing the API for AI agents.
 - **Health Check** — `/healthz` endpoint for load balancers and orchestrators.
 
 ## Getting Started
@@ -68,7 +67,6 @@ This starts both the `redir` server and a Redis instance. The service is availab
 | `GET /stats` | Returns click counts per slug as JSON |
 | `GET /healthz` | Health check (`OK`) |
 | `GET /robots.txt` | Disallows all crawlers |
-| `GET /llms.txt` | API description for AI agents |
 
 ### Example: `/stats` Response
 
