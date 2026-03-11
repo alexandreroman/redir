@@ -85,7 +85,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	slog.Info("redirect", "slug", slug, "target", target)
-	http.Redirect(w, r, target, http.StatusMovedPermanently)
+	http.Redirect(w, r, target, http.StatusFound)
 }
 
 func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug string) {
