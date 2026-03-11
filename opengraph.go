@@ -22,9 +22,9 @@ type OGTags struct {
 	PublishedTime string
 }
 
-// Empty reports whether all OG fields are blank.
+// Empty reports whether the required OG field (title) is blank.
 func (og OGTags) Empty() bool {
-	return og.Title == "" && og.Type == "" && og.Description == "" && og.Image == "" && og.Author == "" && og.PublishedTime == ""
+	return og.Title == ""
 }
 
 // FetchOGTags fetches the given URL and extracts Open Graph meta tags.
