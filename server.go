@@ -13,9 +13,6 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-//go:embed llms.txt.tmpl
-var llmsTmpl string
-
 //go:embed index.html
 var indexHTML []byte
 
@@ -51,11 +48,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if slug == "stats" {
 		s.handleStats(w, r)
-		return
-	}
-
-	if slug == "llms.txt" {
-		s.handleLLMsTxt(w)
 		return
 	}
 
@@ -136,11 +128,6 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug strin
 func handleRobotsTxt(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write([]byte("User-agent: *\nAllow: /\n"))
-}
-
-func (s *Server) handleLLMsTxt(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Write([]byte(llmsTmpl))
 }
 
 type statsResponse struct {
