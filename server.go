@@ -76,6 +76,17 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Serve an HTML page with Open Graph meta tags to social media crawlers
+	// so that link previews render correctly on LinkedIn, Facebook, etc.
+	// Social bots do not trigger a redirect or increment the click counter.
+	if og, ok := s.og[slug]; ok && isSocialBot(r.UserAgent()) {
+		slog.Info("social bot", "slug", slug, "target", target, "user_agent", r.UserAgent())
+		page := renderOGPage(og)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write([]byte(page))
+		return
+	}
+
 	// Fire-and-forget: track the click without delaying the redirect response.
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -89,15 +100,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.Info("redirect", "slug", slug, "target", target, "user_agent", ua)
 	} else {
 		slog.Info("redirect", "slug", slug, "target", target)
-	}
-
-	// Serve an HTML page with Open Graph meta tags to social media crawlers
-	// so that link previews render correctly on LinkedIn, Facebook, etc.
-	if og, ok := s.og[slug]; ok && isSocialBot(r.UserAgent()) {
-		page := renderOGRedirectPage(target, og)
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write([]byte(page))
-		return
 	}
 
 	http.Redirect(w, r, target, http.StatusFound)

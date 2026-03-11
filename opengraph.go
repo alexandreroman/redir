@@ -145,9 +145,9 @@ func isSocialBot(ua string) bool {
 	return false
 }
 
-// renderOGRedirectPage returns an HTML page that contains Open Graph meta tags
-// and a meta-refresh redirect to the target URL.
-func renderOGRedirectPage(target string, og OGTags) string {
+// renderOGPage returns an HTML page that contains only Open Graph meta tags.
+// No redirect is performed — this page is meant for social media crawlers only.
+func renderOGPage(og OGTags) string {
 	var b strings.Builder
 	b.WriteString("<!DOCTYPE html>\n<html>\n<head>\n")
 
@@ -161,9 +161,7 @@ func renderOGRedirectPage(target string, og OGTags) string {
 		fmt.Fprintf(&b, "<meta property=\"og:image\" content=\"%s\" />\n", html.EscapeString(og.Image))
 	}
 
-	escaped := html.EscapeString(target)
-	fmt.Fprintf(&b, "<meta http-equiv=\"refresh\" content=\"0; url=%s\" />\n", escaped)
-	fmt.Fprintf(&b, "</head>\n<body>\n<p>Redirecting to <a href=\"%s\">%s</a>...</p>\n</body>\n</html>\n", escaped, escaped)
+	b.WriteString("</head>\n<body></body>\n</html>\n")
 
 	return b.String()
 }
