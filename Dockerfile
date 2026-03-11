@@ -3,7 +3,8 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /redir .
+ARG GIT_COMMIT=unknown
+RUN CGO_ENABLED=0 go build -ldflags="-s -w -X main.gitCommit=${GIT_COMMIT}" -o /redir .
 
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /redir /redir

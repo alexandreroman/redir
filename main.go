@@ -8,8 +8,12 @@ import (
 	"os"
 )
 
+var gitCommit = "unknown"
+
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
+	slog.Info("starting redir", "commit", gitCommit)
 
 	configPath := cmp.Or(os.Getenv("REDIR_CONFIG"), "redirects.toml")
 
