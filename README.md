@@ -63,7 +63,7 @@ This starts both the `redir` server and a Redis instance. The service is availab
 
 | Endpoint | Description |
 |---|---|
-| `GET /<slug>` | Redirects to the configured URL (HTTP 302) |
+| `GET /<slug>` | Redirects to the configured URL (HTTP 301) |
 | `GET /<slug>.png` | Returns a QR code image for the redirect |
 | `GET /stats` | Returns click counts per slug as JSON |
 | `GET /healthz` | Health check (`OK`) |

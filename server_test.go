@@ -84,8 +84,8 @@ func TestRedirect_ValidSlug(t *testing.T) {
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
 
-	if w.Code != http.StatusFound {
-		t.Errorf("expected 302, got %d", w.Code)
+	if w.Code != http.StatusMovedPermanently {
+		t.Errorf("expected 301, got %d", w.Code)
 	}
 	if loc := w.Header().Get("Location"); loc != "https://github.com" {
 		t.Errorf("expected redirect to https://github.com, got %q", loc)
@@ -129,8 +129,8 @@ func TestRedirect_IncrementsClick(t *testing.T) {
 	w := httptest.NewRecorder()
 	srv.ServeHTTP(w, req)
 
-	if w.Code != http.StatusFound {
-		t.Fatalf("expected 302, got %d", w.Code)
+	if w.Code != http.StatusMovedPermanently {
+		t.Fatalf("expected 301, got %d", w.Code)
 	}
 
 	// The click is tracked in a fire-and-forget goroutine; poll briefly.
