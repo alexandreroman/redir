@@ -131,8 +131,8 @@ func handleRobotsTxt(w http.ResponseWriter) {
 }
 
 type statsResponse struct {
-	Meta  statsMeta          `json:"meta"`
-	Slugs map[string]int64   `json:"slugs"`
+	Meta  statsMeta        `json:"meta"`
+	Slugs map[string]int64 `json:"slugs"`
 }
 
 type statsMeta struct {
