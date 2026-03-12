@@ -25,8 +25,20 @@ func NewServer(routes map[string]string, rdb *redis.Client) *Server {
 	return &Server{routes: routes, rdb: rdb}
 }
 
+// clientIP returns the client's real IP address, using the X-Forwarded-For
+// header when present (first entry), falling back to r.RemoteAddr.
+func clientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if ip, _, ok := strings.Cut(xff, ","); ok {
+			return strings.TrimSpace(ip)
+		}
+		return strings.TrimSpace(xff)
+	}
+	return r.RemoteAddr
+}
+
 func notFound(w http.ResponseWriter, r *http.Request, slug string) {
-	slog.Warn("not found", "slug", slug, "method", r.Method, "remote", r.RemoteAddr)
+	slog.Warn("not found", "slug", slug, "method", r.Method, "remote", clientIP(r))
 	http.NotFound(w, r)
 }
 
@@ -94,9 +106,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	if ua := r.UserAgent(); ua != "" {
-		slog.Info("redirect", "slug", slug, "target", target, "user_agent", ua)
+		slog.Info("redirect", "slug", slug, "target", target, "remote", clientIP(r), "user_agent", ua)
 	} else {
-		slog.Info("redirect", "slug", slug, "target", target)
+		slog.Info("redirect", "slug", slug, "target", target, "remote", clientIP(r))
 	}
 
 	http.Redirect(w, r, target, http.StatusFound)
