@@ -40,6 +40,26 @@ func TestParseOGTags(t *testing.T) {
 	}
 }
 
+func TestParseOGTags_GitHubAuthorFallback(t *testing.T) {
+	html := `<!DOCTYPE html>
+<html>
+<head>
+<meta property="og:title" content="alexandreroman/redir" />
+<meta property="og:description" content="A lightweight URL redirection service" />
+<meta name="octolytics-dimension-user_login" content="alexandreroman" />
+</head>
+<body></body>
+</html>`
+
+	og, err := ParseOGTags(strings.NewReader(html))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if og.Author != "alexandreroman" {
+		t.Errorf("expected author %q, got %q", "alexandreroman", og.Author)
+	}
+}
+
 func TestParseOGTags_NoTags(t *testing.T) {
 	html := `<!DOCTYPE html><html><head><title>No OG</title></head><body></body></html>`
 	og, err := ParseOGTags(strings.NewReader(html))

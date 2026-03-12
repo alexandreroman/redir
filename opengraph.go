@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/net/html/atom"
 	htmlparser "golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 )
 
 // OGTags holds the Open Graph metadata extracted from a target URL.
@@ -82,7 +82,9 @@ func ParseOGTags(r io.Reader) (OGTags, error) {
 			case "og:image":
 				og.Image = content
 			}
-			if name == "author" {
+			// GitHub pages lack <meta name="author">, so fall back to
+			// octolytics-dimension-user_login which holds the repo owner.
+			if name == "author" || name == "octolytics-dimension-user_login" {
 				og.Author = content
 			}
 		}
