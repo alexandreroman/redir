@@ -68,6 +68,9 @@ func TestRobotsTxt(t *testing.T) {
 	if w.Body.String() != expected {
 		t.Errorf("expected %q, got %q", expected, w.Body.String())
 	}
+	if cc := w.Header().Get("Cache-Control"); cc != "public, max-age=86400" {
+		t.Errorf("expected Cache-Control: public, max-age=86400, got %q", cc)
+	}
 }
 
 func TestRedirect_ValidSlug(t *testing.T) {
@@ -82,6 +85,9 @@ func TestRedirect_ValidSlug(t *testing.T) {
 	}
 	if loc := w.Header().Get("Location"); loc != "https://github.com" {
 		t.Errorf("expected redirect to https://github.com, got %q", loc)
+	}
+	if cc := w.Header().Get("Cache-Control"); cc != "private, max-age=3600" {
+		t.Errorf("expected Cache-Control: private, max-age=3600, got %q", cc)
 	}
 }
 
@@ -112,6 +118,9 @@ func TestRedirect_RootPath(t *testing.T) {
 	}
 	if w.Body.Len() == 0 {
 		t.Error("expected non-empty body for index page")
+	}
+	if cc := w.Header().Get("Cache-Control"); cc != "public, max-age=3600" {
+		t.Errorf("expected Cache-Control: public, max-age=3600, got %q", cc)
 	}
 }
 
@@ -154,6 +163,9 @@ func TestQRCode_ValidSlug(t *testing.T) {
 	body := w.Body.Bytes()
 	if len(body) < 4 || string(body[1:4]) != "PNG" {
 		t.Error("response does not look like a valid PNG")
+	}
+	if cc := w.Header().Get("Cache-Control"); cc != "public, max-age=3600" {
+		t.Errorf("expected Cache-Control: public, max-age=3600, got %q", cc)
 	}
 }
 
@@ -202,6 +214,9 @@ func TestStats(t *testing.T) {
 	}
 	if resp.Slugs["docs"] != 7 {
 		t.Errorf("expected docs=7, got %d", resp.Slugs["docs"])
+	}
+	if cc := w.Header().Get("Cache-Control"); cc != "no-store" {
+		t.Errorf("expected Cache-Control: no-store, got %q", cc)
 	}
 }
 

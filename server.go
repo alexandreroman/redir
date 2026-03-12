@@ -56,6 +56,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if slug == "" {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("Cache-Control", "public, max-age=3600")
 		w.Write(indexHTML)
 		return
 	}
@@ -120,6 +121,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.Info("redirect", "slug", slug, "target", target, "remote", clientIP(r))
 	}
 
+	w.Header().Set("Cache-Control", "private, max-age=3600")
 	http.Redirect(w, r, target, http.StatusFound)
 }
 
@@ -143,11 +145,13 @@ func (s *Server) handleQRCode(w http.ResponseWriter, r *http.Request, slug strin
 	}
 
 	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.Write(png)
 }
 
 func handleRobotsTxt(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Write([]byte("User-agent: *\nAllow: /\n"))
 }
 
@@ -195,5 +199,6 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
 	json.NewEncoder(w).Encode(resp)
 }
