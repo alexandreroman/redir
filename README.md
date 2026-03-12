@@ -44,6 +44,8 @@ url = "https://linkedin.com/in/alexandre-roman"
 | `REDIS_PORT` | `6379` | Redis port |
 | `REDIS_PASSWORD` | *(empty)* | Redis password |
 | `REDIS_TLS` | *(empty)* | Set to `true` to enable TLS for Redis connections |
+| `REDIR_USER` | *(empty)* | Username for Basic Auth on `/stats` |
+| `REDIR_PASSWORD` | *(empty)* | Password for Basic Auth on `/stats` |
 
 ### Run Locally
 
@@ -67,7 +69,7 @@ This starts both the `redir` server and a Redis instance. The service is availab
 | `GET /` | Index page |
 | `GET /<slug>` | Redirects to the configured URL (HTTP 302) |
 | `GET /<slug>.png` | Returns a QR code image for the redirect |
-| `GET /stats` | Returns click counts per slug as JSON |
+| `GET /stats` | Returns click counts per slug as JSON (protected by Basic Auth when `REDIR_USER` and `REDIR_PASSWORD` are set) |
 | `GET /healthz` | Health check (`OK`) |
 | `GET /robots.txt` | Allows all crawlers |
 

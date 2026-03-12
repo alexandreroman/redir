@@ -111,7 +111,7 @@ func TestRedirect_SocialBotGetsOGPage(t *testing.T) {
 	routes := map[string]string{
 		"gh": ts.URL,
 	}
-	srv := NewServer(routes, rdb)
+	srv := NewServer(routes, rdb, "", "")
 
 	req := httptest.NewRequest(http.MethodGet, "/gh", nil)
 	req.Header.Set("User-Agent", "LinkedInBot/1.0")
@@ -148,7 +148,7 @@ func TestRedirect_RegularBrowserGets302(t *testing.T) {
 	routes := map[string]string{
 		"gh": "https://github.com",
 	}
-	srv := NewServer(routes, rdb)
+	srv := NewServer(routes, rdb, "", "")
 
 	req := httptest.NewRequest(http.MethodGet, "/gh", nil)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0) Chrome/91.0")
@@ -176,7 +176,7 @@ func TestRedirect_NoOGTagsFallsBackTo302(t *testing.T) {
 	routes := map[string]string{
 		"gh": ts.URL,
 	}
-	srv := NewServer(routes, rdb)
+	srv := NewServer(routes, rdb, "", "")
 
 	req := httptest.NewRequest(http.MethodGet, "/gh", nil)
 	req.Header.Set("User-Agent", "LinkedInBot/1.0")

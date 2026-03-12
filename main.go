@@ -30,8 +30,10 @@ func main() {
 	}
 
 	addr := cmp.Or(os.Getenv("REDIR_ADDR"), ":4000")
+	adminUser := os.Getenv("REDIR_USER")
+	adminPassword := os.Getenv("REDIR_PASSWORD")
 
-	srv := NewServer(routes, rdb)
+	srv := NewServer(routes, rdb, adminUser, adminPassword)
 	slog.Info("server starting", "addr", addr)
 	if err := http.ListenAndServe(addr, srv); err != nil {
 		slog.Error("server stopped", "error", err)

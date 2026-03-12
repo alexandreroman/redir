@@ -19,7 +19,18 @@ func newTestServer(t *testing.T) (*Server, *miniredis.Miniredis) {
 		"gh":   "https://github.com",
 		"docs": "https://docs.example.com",
 	}
-	return NewServer(routes, rdb), mr
+	return NewServer(routes, rdb, "", ""), mr
+}
+
+func newTestServerWithAuth(t *testing.T, user, password string) (*Server, *miniredis.Miniredis) {
+	t.Helper()
+	mr := miniredis.RunT(t)
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	routes := map[string]string{
+		"gh":   "https://github.com",
+		"docs": "https://docs.example.com",
+	}
+	return NewServer(routes, rdb, user, password), mr
 }
 
 func TestHealthz(t *testing.T) {
@@ -213,5 +224,46 @@ func TestStats_NoClicks(t *testing.T) {
 		if count != 0 {
 			t.Errorf("expected 0 clicks for %s, got %d", slug, count)
 		}
+	}
+}
+
+func TestStats_AuthRequired(t *testing.T) {
+	srv, _ := newTestServerWithAuth(t, "admin", "secret")
+
+	req := httptest.NewRequest(http.MethodGet, "/stats", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401, got %d", w.Code)
+	}
+	if w.Header().Get("WWW-Authenticate") == "" {
+		t.Error("expected WWW-Authenticate header")
+	}
+}
+
+func TestStats_AuthWrongCredentials(t *testing.T) {
+	srv, _ := newTestServerWithAuth(t, "admin", "secret")
+
+	req := httptest.NewRequest(http.MethodGet, "/stats", nil)
+	req.SetBasicAuth("admin", "wrong")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401, got %d", w.Code)
+	}
+}
+
+func TestStats_AuthValid(t *testing.T) {
+	srv, _ := newTestServerWithAuth(t, "admin", "secret")
+
+	req := httptest.NewRequest(http.MethodGet, "/stats", nil)
+	req.SetBasicAuth("admin", "secret")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", w.Code)
 	}
 }

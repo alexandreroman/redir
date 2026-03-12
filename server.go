@@ -17,12 +17,14 @@ import (
 var indexHTML []byte
 
 type Server struct {
-	routes map[string]string
-	rdb    *redis.Client
+	routes        map[string]string
+	rdb           *redis.Client
+	adminUser     string
+	adminPassword string
 }
 
-func NewServer(routes map[string]string, rdb *redis.Client) *Server {
-	return &Server{routes: routes, rdb: rdb}
+func NewServer(routes map[string]string, rdb *redis.Client, adminUser, adminPassword string) *Server {
+	return &Server{routes: routes, rdb: rdb, adminUser: adminUser, adminPassword: adminPassword}
 }
 
 // clientIP returns the client's real IP address, using the X-Forwarded-For
@@ -153,6 +155,15 @@ type statsMeta struct {
 }
 
 func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
+	if s.adminUser != "" && s.adminPassword != "" {
+		user, pass, ok := r.BasicAuth()
+		if !ok || user != s.adminUser || pass != s.adminPassword {
+			w.Header().Set("WWW-Authenticate", `Basic realm="redir"`)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+	}
+
 	slugs := make([]string, 0, len(s.routes))
 	for slug := range s.routes {
 		slugs = append(slugs, slug)
