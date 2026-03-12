@@ -96,6 +96,33 @@ url  = "https://example.com"
 	}
 }
 
+func TestLoadConfig_InvalidURL(t *testing.T) {
+	cases := []struct {
+		name string
+		url  string
+	}{
+		{"javascript scheme", "javascript:alert(1)"},
+		{"data scheme", "data:text/html,<h1>hi</h1>"},
+		{"ftp scheme", "ftp://example.com/file"},
+		{"no scheme", "example.com"},
+		{"empty url", ""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			path := writeTempTOML(t, `
+[[redirects]]
+slug = "test"
+url  = "`+tc.url+`"
+`)
+			_, err := LoadConfig(path)
+			if err == nil {
+				t.Fatalf("expected error for invalid URL %q", tc.url)
+			}
+		})
+	}
+}
+
 func TestLoadConfig_ReservedSlug(t *testing.T) {
 	reserved := []string{"healthz", "stats", "robots.txt"}
 

@@ -5,6 +5,7 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -27,8 +28,26 @@ func (og OGTags) Empty() bool {
 }
 
 // FetchOGTags fetches the given URL and extracts Open Graph meta tags.
+// Only http/https URLs are allowed to mitigate SSRF via exotic schemes.
+// Redirects are capped at 3 hops to avoid infinite loops or redirect-based SSRF.
 func FetchOGTags(targetURL string) (OGTags, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
+	u, err := url.Parse(targetURL)
+	if err != nil {
+		return OGTags{}, fmt.Errorf("invalid target URL: %v", err)
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return OGTags{}, fmt.Errorf("unsupported URL scheme %q", u.Scheme)
+	}
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 3 {
+				return fmt.Errorf("too many redirects")
+			}
+			return nil
+		},
+	}
 	req, err := http.NewRequest(http.MethodGet, targetURL, nil)
 	if err != nil {
 		return OGTags{}, err
@@ -136,6 +155,7 @@ func isSocialBot(ua string) bool {
 
 // renderOGPage returns an HTML page that contains only Open Graph meta tags.
 // No redirect is performed — this page is meant for social media crawlers only.
+// All dynamic values are escaped with html.EscapeString to prevent XSS.
 func renderOGPage(og OGTags, targetURL string) string {
 	var b strings.Builder
 	b.WriteString("<!DOCTYPE html>\n<html>\n<head>\n")
@@ -147,6 +167,8 @@ func renderOGPage(og OGTags, targetURL string) string {
 		fmt.Fprintf(&b, "<title>%s</title>\n", escaped)
 	}
 
+	// Default to "website" if the upstream og:type is missing or unrecognized,
+	// preventing injection of arbitrary type values.
 	ogType := og.Type
 	if !isValidOGType(ogType) {
 		ogType = "website"

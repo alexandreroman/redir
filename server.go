@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	_ "embed"
 	"encoding/json"
 	"log/slog"
@@ -29,6 +30,8 @@ func NewServer(routes map[string]string, rdb *redis.Client, adminUser, adminPass
 
 // clientIP returns the client's real IP address, using the X-Forwarded-For
 // header when present (first entry), falling back to r.RemoteAddr.
+// Note: X-Forwarded-For is trusted unconditionally — deploy behind a reverse
+// proxy that overwrites this header to prevent client spoofing.
 func clientIP(r *http.Request) string {
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
 		if ip, _, ok := strings.Cut(xff, ","); ok {
@@ -45,6 +48,10 @@ func notFound(w http.ResponseWriter, r *http.Request, slug string) {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Security headers: prevent MIME-type sniffing and clickjacking.
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("X-Frame-Options", "DENY")
+
 	slug := strings.TrimPrefix(r.URL.Path, "/")
 
 	if slug == "" {
@@ -155,9 +162,12 @@ type statsMeta struct {
 }
 
 func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
+	// Use constant-time comparison to prevent timing attacks on credentials.
 	if s.adminUser != "" && s.adminPassword != "" {
 		user, pass, ok := r.BasicAuth()
-		if !ok || user != s.adminUser || pass != s.adminPassword {
+		userMatch := subtle.ConstantTimeCompare([]byte(user), []byte(s.adminUser)) == 1
+		passMatch := subtle.ConstantTimeCompare([]byte(pass), []byte(s.adminPassword)) == 1
+		if !ok || !userMatch || !passMatch {
 			w.Header().Set("WWW-Authenticate", `Basic realm="redir"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

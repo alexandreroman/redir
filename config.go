@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/BurntSushi/toml"
@@ -38,6 +39,18 @@ func LoadConfig(path string) (map[string]string, error) {
 		}
 		if reservedSlugs[r.Slug] {
 			return nil, fmt.Errorf("slug %q is reserved and cannot be used as a redirect", r.Slug)
+		}
+		// Reject non-HTTP(S) URLs to prevent open redirects to dangerous
+		// schemes such as javascript: or data:.
+		u, err := url.Parse(r.URL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid URL for slug %q: %v", r.Slug, err)
+		}
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return nil, fmt.Errorf("invalid URL scheme for slug %q: only http and https are allowed", r.Slug)
+		}
+		if u.Host == "" {
+			return nil, fmt.Errorf("invalid URL for slug %q: missing host", r.Slug)
 		}
 		routes[r.Slug] = r.URL
 	}

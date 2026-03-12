@@ -255,6 +255,21 @@ func TestStats_AuthWrongCredentials(t *testing.T) {
 	}
 }
 
+func TestSecurityHeaders(t *testing.T) {
+	srv, _ := newTestServer(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+
+	if v := w.Header().Get("X-Content-Type-Options"); v != "nosniff" {
+		t.Errorf("expected X-Content-Type-Options: nosniff, got %q", v)
+	}
+	if v := w.Header().Get("X-Frame-Options"); v != "DENY" {
+		t.Errorf("expected X-Frame-Options: DENY, got %q", v)
+	}
+}
+
 func TestStats_AuthValid(t *testing.T) {
 	srv, _ := newTestServerWithAuth(t, "admin", "secret")
 
