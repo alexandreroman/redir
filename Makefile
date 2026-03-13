@@ -25,4 +25,4 @@ docker-build:
 	docker build --build-arg GIT_COMMIT=$(GIT_COMMIT) -t $(IMAGE_NAME) .
 
 docker-run:
-	docker compose up --build
+	docker-compose up --build

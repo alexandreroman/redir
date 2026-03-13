@@ -57,7 +57,7 @@ make run
 ### Run with Docker Compose
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 
 This starts both the `redir` server and a Redis instance. The service is available at `http://localhost:4000`.
