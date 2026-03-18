@@ -121,7 +121,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slog.Info("redirect", "slug", slug, "target", target, "remote", clientIP(r))
 	}
 
-	w.Header().Set("Cache-Control", "private, max-age=3600")
+	// Browser caches the redirect for 1h (max-age).
+	// CDN caches for 60s (s-maxage), then revalidates — so clicks are
+	// still counted under normal operation. If the origin is unreachable,
+	// the CDN serves a stale redirect for up to 24h (stale-if-error).
+	w.Header().Set("Cache-Control", "public, max-age=3600, s-maxage=60, stale-if-error=86400")
 	http.Redirect(w, r, target, http.StatusFound)
 }
 

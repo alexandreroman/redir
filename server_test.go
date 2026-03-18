@@ -86,8 +86,8 @@ func TestRedirect_ValidSlug(t *testing.T) {
 	if loc := w.Header().Get("Location"); loc != "https://github.com" {
 		t.Errorf("expected redirect to https://github.com, got %q", loc)
 	}
-	if cc := w.Header().Get("Cache-Control"); cc != "private, max-age=3600" {
-		t.Errorf("expected Cache-Control: private, max-age=3600, got %q", cc)
+	if cc := w.Header().Get("Cache-Control"); cc != "public, max-age=3600, s-maxage=60, stale-if-error=86400" {
+		t.Errorf("expected Cache-Control: public, max-age=3600, s-maxage=60, stale-if-error=86400, got %q", cc)
 	}
 }
 
